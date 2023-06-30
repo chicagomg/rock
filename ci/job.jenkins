@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
     	GIT_REPO="github.com/chicagomg/rock"
-        MAIL_RES="alexey@ryabtsev.pro"
+        MAIL_RES="gurov@surf.dev"
     }
     stages {
         stage("A. Clone Git Repository") {
