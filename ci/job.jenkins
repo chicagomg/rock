@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    environment {
+    	GIT_REPO="github.com/chicagomg/rock"
+        MAIL_RES="alexey@ryabtsev.pro"
+    }
+    stages {
+        stage("A. Clone Git Repository") {
+            steps {
+                git branch: 'main', credentialsId: 'ae537417-c102-4a96-b36c-bedfe80ddfeb', url: "https://${GIT_REPO}"
+            }
+        }
+        stage("B. Create File") {
+            steps {
+            	sh "touch job.log"
+            }
+        }
+        stage("C. Add TimeStamp") {
+            steps {
+            	script {
+  					DATE_TAG = java.time.LocalDate.now()
+  					DATETIME_TAG = java.time.LocalDateTime.now()
+				}		
+				sh "echo '${DATETIME_TAG} - PRjob executed' > job.log"
+				sh "git config --global user.email 'basilio@cat.fox'"
+				sh "git config --global user.name 'Mr. Git'"
+				sh "git add job.log"
+				sh "git commit -m 'job.log update'"
+            }
+        }
+        stage("D. Push changes") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'ae537417-c102-4a96-b36c-bedfe80ddfeb', usernameVariable: 'username', passwordVariable: 'password')]) {
+    			sh('git push https://$username:$password@$GIT_REPO')
+				}
+            }
+        }
+    }
+    post {
+        always {
+            emailext body: "Hello. I would like to inform you that pipline in repository https://${GIT_REPO} finished with status ${currentBuild.currentResult} \n See ${BUILD_URL}", subject: "Jenkins build: ${currentBuild.currentResult}", to: "${MAIL_RES}"
+        }
+    }
+}
